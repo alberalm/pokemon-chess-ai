@@ -79,8 +79,7 @@ class King(Piece):
 	def get_valid_moves(self, board):
 		output = []
 		for square in self.get_moves(board):
-			if not board.is_in_check(self.color, board_change=[self.pos, square.pos]):
-				output.append(square)
+			output.append(square)
 
 		if self.can_castle(board) == 'queenside':
 			output.append(

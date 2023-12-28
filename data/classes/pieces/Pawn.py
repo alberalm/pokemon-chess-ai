@@ -76,6 +76,15 @@ class Pawn(Piece):
 					if square.occupying_piece.color != self.color:
 						output.append(square)
 
+		# en passant
+		if board.en_passant != None:
+			if self.color == 'white' and self.y == 3:
+				if self.x + 1 == board.en_passant.x or self.x - 1 == board.en_passant.x:
+					output.append(board.en_passant)
+			elif self.color == 'black' and self.y == 4:
+				if self.x + 1 == board.en_passant.x or self.x - 1 == board.en_passant.x:
+					output.append(board.en_passant)
+
 		return output
 
 	def attacking_squares(self, board):

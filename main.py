@@ -1,5 +1,4 @@
 import pygame
-import pandas as pd
 
 from data.classes.Board import Board
 
@@ -16,6 +15,16 @@ def draw(display):
 	pygame.display.update()
 
 
+def print_game(game_moves, result):
+	output = ''
+	for i in range(len(game_moves)):
+		if i % 2 == 0:
+			output += str(i // 2 + 1) + '. '
+		output += game_moves[i] + ' '
+	output += result
+	return output
+
+
 if __name__ == '__main__':
 	running = True
 	while running:
@@ -28,11 +37,17 @@ if __name__ == '__main__':
        			# If the mouse is clicked
 				if event.button == 1:
 					board.handle_click(mx, my)
-		if board.is_in_checkmate('black'): # If black is in checkmate
-			print('White wins!')
-			running = False
-		elif board.is_in_checkmate('white'): # If white is in checkmate
-			print('Black wins!')
+		output = board.game_finished()
+		if output != '':
+			print(output)
 			running = False
 		# Draw the board
 		draw(screen)
+	if output == '' or output == 'Draw by 50 move rule' or \
+		output == 'Draw by 3-fold repetition' or output == 'Draw by absence of kings':
+		output = '1/2-1/2'
+	elif output == 'White wins!':
+		output = '1-0'
+	elif output == 'Black wins!':
+		output = '0-1'
+	print(print_game(board.game_moves, output))

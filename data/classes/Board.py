@@ -19,6 +19,11 @@ class Board:
 		self.tile_height = height // 8
 		self.selected_piece = None
 		self.turn = 'white'
+		self.chain_move = False
+		self.en_passant = None
+		self.moves_until_draw = 100
+		self.game_moves = []
+		self.current_move = ""
 
 		self.white_config = pd.read_csv('white_config.csv')
 		self.black_config = pd.read_csv('black_config.csv')
@@ -123,69 +128,49 @@ class Board:
 					self.selected_piece = clicked_square.occupying_piece
 
 		elif self.selected_piece.move(self, clicked_square, self.type_chart):
-			self.turn = 'white' if self.turn == 'black' else 'black'
+			if not self.chain_move:
+				self.end_turn()
 
 		elif clicked_square.occupying_piece is not None:
 			if clicked_square.occupying_piece.color == self.turn:
-				self.selected_piece = clicked_square.occupying_piece
+				if not self.chain_move:
+					self.selected_piece = clicked_square.occupying_piece
+				elif self.selected_piece == clicked_square.occupying_piece:
+					self.selected_piece = None
+					self.end_turn()
+
+	
+	def end_turn(self):
+		self.turn = 'white' if self.turn == 'black' else 'black'
+		self.moves_until_draw -= 1
+		self.game_moves.append(self.current_move)
+		self.current_move = ""
 
 
-	def is_in_check(self, color, board_change=None): # board_change = [(x1, y1), (x2, y2)]
-		output = False
-		king_pos = None
-
-		changing_piece = None
-		old_square = None
-		new_square = None
-		new_square_old_piece = None
-
-		if board_change is not None:
-			for square in self.squares:
-				if square.pos == board_change[0]:
-					changing_piece = square.occupying_piece
-					old_square = square
-					old_square.occupying_piece = None
-			for square in self.squares:
-				if square.pos == board_change[1]:
-					new_square = square
-					new_square_old_piece = new_square.occupying_piece
-					new_square.occupying_piece = changing_piece
-
-		pieces = [
-			i.occupying_piece for i in self.squares if i.occupying_piece is not None
-		]
-
-		if changing_piece is not None:
-			if changing_piece.notation == 'K':
-				king_pos = new_square.pos
-		if king_pos == None:
-			for piece in pieces:
-				if piece.notation == 'K' and piece.color == color:
-						king_pos = piece.pos
-		for piece in pieces:
-			if piece.color != color:
-				for square in piece.attacking_squares(self):
-					if square.pos == king_pos:
-						output = True
-
-		if board_change is not None:
-			old_square.occupying_piece = changing_piece
-			new_square.occupying_piece = new_square_old_piece
-						
-		return output
-
-
-	def is_in_checkmate(self, color):
-		output = False
-
-		for piece in [i.occupying_piece for i in self.squares]:
-			if piece != None:
-				if piece.notation == 'K' and piece.color == color:
-					king = piece
-
-		if king.get_valid_moves(self) == []:
-			if self.is_in_check(color):
-				output = True
+	def game_finished(self):
+		output = ''
+		w_king = None
+		b_king = None
+		
+		if self.moves_until_draw == 0:
+			output = 'Draw by 50 move rule'
+		else:
+			for piece in [i.occupying_piece for i in self.squares]:
+				if piece != None:
+					if piece.notation == 'K':
+						if piece.color == 'white':
+							w_king = piece
+						else:
+							b_king = piece
+				if w_king != None and b_king != None:
+					break
+			if w_king == None:
+				if b_king == None:
+					output = 'Draw by absence of kings'
+				else:
+					output = 'Black wins!'
+			elif b_king == None:
+				output = 'White wins!'
 
 		return output
 
