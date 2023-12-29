@@ -95,9 +95,9 @@ class Board:
 				if not row_match:
 					self.current_move += chr(prev_square.x + 97)
 				elif not col_match:
-					self.current_move += str(8 - prev_square.y - 1)
+					self.current_move += str(8 - prev_square.y)
 				else:
-					self.current_move += chr(prev_square.x + 97) + str(8 - prev_square.y - 1)
+					self.current_move += chr(prev_square.x + 97) + str(8 - prev_square.y)
 
 
 	def setup_board(self):
@@ -151,7 +151,7 @@ class Board:
 					self.selected_piece = clicked_square.occupying_piece
 
 		elif self.selected_piece.move(self, clicked_square, self.type_chart):
-			if not self.chain_move:
+			if not self.chain_move or self.game_finished() != '':
 				self.end_turn()
 
 		elif clicked_square.occupying_piece is not None:

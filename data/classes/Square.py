@@ -28,7 +28,7 @@ class Square:
 
 	def get_coord(self):
 		columns = 'abcdefgh'
-		return columns[self.x] + str(self.y + 1)
+		return columns[self.x] + str(8 - self.y)
 
 
 	def draw(self, display):
