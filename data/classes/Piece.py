@@ -39,9 +39,10 @@ class Piece:
 				if type_chart[opposing_type][self.type] != 0:
 					captured_square.occupying_piece = None
 			
-			if board.current_move == '' and (self.notation == 'K' or abs(prev_square.x - self.x) != 2):
+			if board.current_move == '' and (self.notation != 'K' or abs(prev_square.x - self.x) != 2):
 				board.current_move = self.notation if self.notation != ' ' else \
 					(prev_square.coord[0] if capture else '')
+				board.add_disambiguation(self, square, prev_square)
 			
 			if capture:
 				board.current_move += 'x'

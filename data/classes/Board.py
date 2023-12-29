@@ -75,6 +75,29 @@ class Board:
 
 	def get_piece_from_pos(self, pos):
 		return self.get_square_from_pos(pos).occupying_piece
+	
+
+	def add_disambiguation(self, piece, square, prev_square):
+		if piece.notation != ' ':
+			pieces = [sq for sq in self.squares if sq.occupying_piece != None and \
+				sq.occupying_piece.color == piece.color and \
+					sq.occupying_piece.notation == piece.notation and \
+						square in sq.occupying_piece.get_valid_moves(self) and \
+							sq.occupying_piece.type != piece.type]
+			if len(pieces) > 0:
+				row_match = False
+				col_match = False
+				for p in pieces:
+					if p.x == prev_square.x:
+						row_match = True
+					if p.y == prev_square.y:
+						col_match = True
+				if not row_match:
+					self.current_move += chr(prev_square.x + 97)
+				elif not col_match:
+					self.current_move += str(8 - prev_square.y - 1)
+				else:
+					self.current_move += chr(prev_square.x + 97) + str(8 - prev_square.y - 1)
 
 
 	def setup_board(self):
