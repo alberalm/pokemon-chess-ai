@@ -43,8 +43,7 @@ if __name__ == '__main__':
 			running = False
 		# Draw the board
 		draw(screen)
-	if output == '' or output == 'Draw by 50 move rule' or \
-		output == 'Draw by 3-fold repetition' or output == 'Draw by absence of kings':
+	if output[:4] == 'Draw':
 		output = '1/2-1/2'
 	elif output == 'White wins!':
 		output = '1-0'

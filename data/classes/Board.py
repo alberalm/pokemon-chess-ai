@@ -24,6 +24,10 @@ class Board:
 		self.moves_until_draw = 100
 		self.game_moves = []
 		self.current_move = ""
+		self.positions = {}
+		self.white_castle = 2
+		self.black_castle = 2
+		self.draw_by_repetition = False
 
 		self.white_config = pd.read_csv('white_config.csv')
 		self.black_config = pd.read_csv('black_config.csv')
@@ -38,10 +42,10 @@ class Board:
 		self.config = [
 			['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
 			['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-			['','','','','','','',''],
-			['','','','','','','',''],
-			['','','','','','','',''],
-			['','','','','','','',''],
+			[' ',' ',' ',' ',' ',' ',' ',' '],
+			[' ',' ',' ',' ',' ',' ',' ',' '],
+			[' ',' ',' ',' ',' ',' ',' ',' '],
+			[' ',' ',' ',' ',' ',' ',' ',' '],
 			['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
 			['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR'],
 		]
@@ -51,6 +55,8 @@ class Board:
 			self.config[1][i] += self.black_config[str(i+1)][0]
 			self.config[6][i] += self.white_config[str(i+1)][0]
 			self.config[7][i] += self.white_config[str(i+1)][1]
+
+		self.update_positions()
 
 		self.squares = self.generate_squares()
 
@@ -104,7 +110,7 @@ class Board:
 		# iterating 2d list
 		for y, row in enumerate(self.config):
 			for x, piece in enumerate(row):
-				if piece != '':
+				if piece != ' ':
 					square = self.get_square_from_pos((x, y))
 
 					# looking inside contents, what piece does it have
@@ -112,7 +118,6 @@ class Board:
 						square.occupying_piece = Rook(
 							(x, y), 'white' if piece[0] == 'w' else 'black', self, piece[2:]
 						)
-					# as you notice above, we put `self` as argument, or means our class Board
 
 					elif piece[1] == 'N':
 						square.occupying_piece = Knight(
@@ -168,6 +173,25 @@ class Board:
 		self.moves_until_draw -= 1
 		self.game_moves.append(self.current_move)
 		self.current_move = ""
+		self.update_config()
+		self.update_positions()
+
+
+	def update_config(self):
+		self.config = [[self.get_piece_from_pos((x, y)).to_string() if \
+				  self.get_piece_from_pos((x, y)) != None else ' ' for x in range(8)] \
+					for y in range(8)]
+		
+	
+	def update_positions(self):
+		c = ''.join([''.join([j[:4] for j in i]) for i in self.config])
+		c += str(self.white_castle) + str(self.black_castle) + self.turn[0]
+		if c not in self.positions:
+			self.positions[c] = 1
+		else:
+			self.positions[c] += 1
+			if self.positions[c] == 3:
+				self.draw_by_repetition = True
 
 
 	def game_finished(self):
@@ -177,6 +201,8 @@ class Board:
 		
 		if self.moves_until_draw == 0:
 			output = 'Draw by 50 move rule'
+		elif self.draw_by_repetition:
+			output = 'Draw by repetition'
 		else:
 			for piece in [i.occupying_piece for i in self.squares]:
 				if piece != None:

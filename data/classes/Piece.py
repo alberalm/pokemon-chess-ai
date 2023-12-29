@@ -71,6 +71,13 @@ class Piece:
 			
 			if board.chain_move == False:
 				board.selected_piece = None
+			
+			# Careful with this when implementing misses
+			if self.notation == 'R' and not self.has_moved:
+				if self.color == 'white':
+					board.white_castle -= 1
+				else:
+					board.black_castle -= 1
 			self.has_moved = True
 
 			# Pawn promotion
@@ -113,6 +120,10 @@ class Piece:
 					rook.pos, rook.x, rook.y = (5, self.y), 5, self.y
 					board.get_square_from_pos((5, self.y)).occupying_piece = rook
 					board.current_move = 'O-O'
+				if self.color == 'white':
+					board.white_castle = 0
+				else:
+					board.black_castle = 0
 
 			return True
 		elif not board.chain_move:
@@ -142,3 +153,7 @@ class Piece:
 	# True for all pieces except pawn
 	def attacking_squares(self, board):
 		return self.get_moves(board)
+	
+	
+	def to_string(self):
+		return self.color[0] + (self.notation if self.notation != ' ' else 'P') + self.type
