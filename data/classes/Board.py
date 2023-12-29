@@ -28,6 +28,7 @@ class Board:
 		self.white_castle = 2
 		self.black_castle = 2
 		self.draw_by_repetition = False
+		self.promotion = False
 
 		self.white_config = pd.read_csv('white_config.csv')
 		self.black_config = pd.read_csv('black_config.csv')
@@ -42,10 +43,10 @@ class Board:
 		self.config = [
 			['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
 			['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-			[' ',' ',' ',' ',' ',' ',' ',' '],
-			[' ',' ',' ',' ',' ',' ',' ',' '],
-			[' ',' ',' ',' ',' ',' ',' ',' '],
-			[' ',' ',' ',' ',' ',' ',' ',' '],
+			['-','-','-','-','-','-','-','-'],
+			['-','-','-','-','-','-','-','-'],
+			['-','-','-','-','-','-','-','-'],
+			['-','-','-','-','-','-','-','-'],
 			['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
 			['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR'],
 		]
@@ -110,7 +111,7 @@ class Board:
 		# iterating 2d list
 		for y, row in enumerate(self.config):
 			for x, piece in enumerate(row):
-				if piece != ' ':
+				if piece != '-':
 					square = self.get_square_from_pos((x, y))
 
 					# looking inside contents, what piece does it have
@@ -150,14 +151,45 @@ class Board:
 		y = my // self.tile_height
 		clicked_square = self.get_square_from_pos((x, y))
 
-		if self.selected_piece is None:
+		if self.promotion:
+			if clicked_square.promotion:
+				self.promotion = False
+				clicked_square.promotion = False
+				if mx < clicked_square.abs_x + self.tile_width // 2 and \
+					  my < clicked_square.abs_y + self.tile_height // 2:
+					piece = Knight
+				elif mx >= clicked_square.abs_x + self.tile_width // 2 and \
+					  my < clicked_square.abs_y + self.tile_height // 2:
+					piece = Bishop
+				elif mx < clicked_square.abs_x + self.tile_width // 2 and \
+					  my >= clicked_square.abs_y + self.tile_height // 2:
+					piece = Rook
+				elif mx >= clicked_square.abs_x + self.tile_width // 2 and \
+					  my >= clicked_square.abs_y + self.tile_height // 2:
+					piece = Queen
+				clicked_square.occupying_piece = piece(
+						(clicked_square.x, clicked_square.y),
+						clicked_square.occupying_piece.color,
+						self,
+						clicked_square.occupying_piece.type
+						)
+				self.current_move += '=' + clicked_square.occupying_piece.notation
+				if self.chain_move:
+						self.selected_piece = clicked_square.occupying_piece
+						self.current_move += '+'
+						# CHANGE THIS WHEN CRITICAL HITS ARE IMPLEMENTED
+				if not self.chain_move or self.game_finished() != '':
+					self.end_turn()
+
+		elif self.selected_piece is None:
 			if clicked_square.occupying_piece is not None:
 				if clicked_square.occupying_piece.color == self.turn:
 					self.selected_piece = clicked_square.occupying_piece
 
 		elif self.selected_piece.move(self, clicked_square, self.type_chart):
-			if not self.chain_move or self.game_finished() != '':
-				self.end_turn()
+			if not self.promotion:
+				if not self.chain_move or self.game_finished() != '':
+					self.end_turn()
 
 		elif clicked_square.occupying_piece is not None:
 			if clicked_square.occupying_piece.color == self.turn:
@@ -199,27 +231,28 @@ class Board:
 		w_king = None
 		b_king = None
 		
-		if self.moves_until_draw == 0:
-			output = 'Draw by 50 move rule'
-		elif self.draw_by_repetition:
-			output = 'Draw by repetition'
-		else:
-			for piece in [i.occupying_piece for i in self.squares]:
-				if piece != None:
-					if piece.notation == 'K':
-						if piece.color == 'white':
-							w_king = piece
-						else:
-							b_king = piece
-				if w_king != None and b_king != None:
-					break
-			if w_king == None:
-				if b_king == None:
-					output = 'Draw by absence of kings'
-				else:
-					output = 'Black wins!'
-			elif b_king == None:
-				output = 'White wins!'
+		if not self.promotion:
+			if self.moves_until_draw == 0:
+				output = 'Draw by 50 move rule'
+			elif self.draw_by_repetition:
+				output = 'Draw by repetition'
+			else:
+				for piece in [i.occupying_piece for i in self.squares]:
+					if piece != None:
+						if piece.notation == 'K':
+							if piece.color == 'white':
+								w_king = piece
+							else:
+								b_king = piece
+					if w_king != None and b_king != None:
+						break
+				if w_king == None:
+					if b_king == None:
+						output = 'Draw by absence of kings'
+					else:
+						output = 'Black wins!'
+				elif b_king == None:
+					output = 'White wins!'
 
 		return output
 

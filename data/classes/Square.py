@@ -17,6 +17,7 @@ class Square:
 		self.occupying_piece = None
 		self.coord = self.get_coord()
 		self.highlight = False
+		self.promotion = False
 
 		self.rect = pygame.Rect(
 			self.abs_x,
@@ -37,10 +38,22 @@ class Square:
 		else:
 			pygame.draw.rect(display, self.draw_color, self.rect)
 
-		if self.occupying_piece != None:
+		if self.promotion:
+			centering_rect = self.occupying_piece.img.get_rect()
+			centering_rect.center = self.rect.center
+			display.blit(self.load_image('knight'), centering_rect.topleft)
+			display.blit(self.load_image('bishop'), centering_rect.midtop)
+			display.blit(self.load_image('rook'), centering_rect.midleft)
+			display.blit(self.load_image('queen'), centering_rect.center)
+		elif self.occupying_piece != None:
 			centering_rect = self.occupying_piece.img.get_rect()
 			centering_rect.center = self.rect.center
 			display.blit(self.occupying_piece.img, centering_rect.topleft)
 			type_pos = ((centering_rect.midleft[0] + centering_rect.bottomleft[0]) / 2, (centering_rect.midleft[1] + centering_rect.bottomleft[1]) / 2)
 			display.blit(self.occupying_piece.type_img, type_pos)
 
+
+	def load_image(self, piece_type):
+		img = pygame.image.load('data/images/pieces/' + self.occupying_piece.color + '_' + piece_type + '.png')
+		img = pygame.transform.scale(img, (self.width // 2 - 10, self.height // 2 - 10))
+		return img

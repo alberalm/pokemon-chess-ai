@@ -15,12 +15,14 @@ def draw(display):
 	pygame.display.update()
 
 
-def print_game(game_moves, result):
+def game_to_str(game_moves, result, hashtag):
 	output = ''
 	for i in range(len(game_moves)):
 		if i % 2 == 0:
 			output += str(i // 2 + 1) + '. '
 		output += game_moves[i] + ' '
+	if hashtag:
+		output = output[:-1] + '#' + ' '
 	output += result
 	return output
 
@@ -43,10 +45,15 @@ if __name__ == '__main__':
 			running = False
 		# Draw the board
 		draw(screen)
+	hashtag = False
 	if output[:4] == 'Draw':
+		if output == 'Draw by absence of kings':
+			hashtag = True
 		output = '1/2-1/2'
 	elif output == 'White wins!':
+		hashtag = True
 		output = '1-0'
 	elif output == 'Black wins!':
+		hashtag = True
 		output = '0-1'
-	print(print_game(board.game_moves, output))
+	print(game_to_str(board.game_moves, output, hashtag))

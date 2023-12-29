@@ -80,27 +80,18 @@ class Piece:
 					board.black_castle -= 1
 			self.has_moved = True
 
-			# Pawn promotion
 			if self.notation == ' ':
 				board.moves_until_draw = 101
+				# En passant setup
 				if self.color == 'white' and self.y == 4 and prev_square.y == 6:
 					board.en_passant = board.get_square_from_pos((self.x, 5))
 				elif self.color == 'black' and self.y == 3 and prev_square.y == 1:
 					board.en_passant = board.get_square_from_pos((self.x, 2))
-				elif self.y == 0 or self.y == 7:
-					from data.classes.pieces.Queen import Queen
+				# Pawn promotion
+				elif (self.y == 0 or self.y == 7) and square.occupying_piece == self:
 					board.en_passant = None
-					square.occupying_piece = Queen(
-						(self.x, self.y),
-						self.color,
-						board,
-						self.type
-					)
-					board.current_move += '=' + square.occupying_piece.notation
-					if board.chain_move:
-						board.selected_piece = square.occupying_piece
-						board.current_move += '+'
-						# CHANGE THIS WHEN CRITICAL HITS ARE IMPLEMENTED
+					board.promotion = True
+					square.promotion = True
 				elif not board.chain_move:
 					board.en_passant = None
 			else:
