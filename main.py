@@ -1,13 +1,22 @@
 import pygame
+import asyncio
 
 from data.classes.Board import Board
 
 pygame.init()
 
 WINDOW_SIZE = (600, 600)
-screen = pygame.display.set_mode(WINDOW_SIZE)
+DETERMINISTIC = True
 
-board = Board(WINDOW_SIZE[0], WINDOW_SIZE[1])
+screen = pygame.display.set_mode(WINDOW_SIZE)
+board = Board(WINDOW_SIZE[0], WINDOW_SIZE[1], DETERMINISTIC)
+running = True
+mx = 0
+my = 0
+output = ''
+hashtag = False
+
+pygame.display.set_caption("Pokemon Chess")
 
 def draw(display):
 	display.fill('white')
@@ -27,8 +36,9 @@ def game_to_str(game_moves, result, hashtag):
 	return output
 
 
-if __name__ == '__main__':
-	running = True
+async def main():
+	global board, screen, WINDOW_SIZE, DETERMINISTIC, running, mx, my, output, hashtag
+
 	while running:
 		mx, my = pygame.mouse.get_pos()
 		for event in pygame.event.get():
@@ -45,15 +55,40 @@ if __name__ == '__main__':
 			running = False
 		# Draw the board
 		draw(screen)
+		await asyncio.sleep(0)
+	
 	hashtag = False
-	if output[:4] == 'Draw':
-		if output == 'Draw by absence of kings':
-			hashtag = True
+	font = pygame.font.SysFont('timesnewroman', 40)
+	if output == 'Draw by absence of kings':
+		text = font.render('Draw by absence of kings', True, (255, 255, 255), (0, 0, 0))
+		hashtag = True
+		output = '1/2-1/2'
+	elif output == 'Draw by 50 move rule':
+		text = font.render('Draw by 50 move rule', True, (255, 255, 255), (0, 0, 0))
+		output = '1/2-1/2'
+	elif output == 'Draw by repetition':
+		text = font.render('Draw by repetition', True, (255, 255, 255), (0, 0, 0))
 		output = '1/2-1/2'
 	elif output == 'White wins!':
+		text = font.render('White wins!', True, (255, 255, 255), (0, 0, 0))
 		hashtag = True
 		output = '1-0'
 	elif output == 'Black wins!':
+		text = font.render('Black wins!', True, (255, 255, 255), (0, 0, 0))
 		hashtag = True
 		output = '0-1'
+	else:
+		text = font.render(output, True, (255, 255, 255), (0, 0, 0))
+		output = '1/2-1/2'
+	textRect = text.get_rect()
+	
+	# set the center of the rectangular object.
+	textRect.center = (WINDOW_SIZE[0] // 2, WINDOW_SIZE[1] // 2)
+	screen.blit(text, textRect)
+
 	print(game_to_str(board.game_moves, output, hashtag))
+
+	pygame.quit()
+	quit()
+
+asyncio.run(main())

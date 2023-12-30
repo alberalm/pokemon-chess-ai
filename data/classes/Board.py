@@ -1,5 +1,4 @@
 import pygame
-import pandas as pd
 
 from data.classes.Square import Square
 from data.classes.pieces.Rook import Rook
@@ -8,11 +7,11 @@ from data.classes.pieces.Knight import Knight
 from data.classes.pieces.Queen import Queen
 from data.classes.pieces.King import King
 from data.classes.pieces.Pawn import Pawn
-
+from data.classes.csv_reader import *
 
 # Game state checker
 class Board:
-	def __init__(self, width, height):
+	def __init__(self, width, height, deterministic):
 		self.width = width
 		self.height = height
 		self.tile_width = width // 8
@@ -29,15 +28,12 @@ class Board:
 		self.black_castle = 2
 		self.draw_by_repetition = False
 		self.promotion = False
+		self.deterministic = deterministic
 
-		self.white_config = pd.read_csv('white_config.csv')
-		self.black_config = pd.read_csv('black_config.csv')
-		self.type_chart = pd.read_csv('type_chart.csv')
-		self.type_chart.index = [
-			'normal','fire','water','electric','grass','ice',
-			'fighting','poison','ground','flying','psychic','bug',
-			'rock','ghost','dragon','dark','steel','fairy'
-		]
+		self.white_config = read_config('white_config.csv')
+		self.black_config = read_config('black_config.csv')
+
+		self.type_chart = read_type_chart('type_chart.csv')
 
 		# try making it chess.board.fen()
 		self.config = [
@@ -52,10 +48,10 @@ class Board:
 		]
 
 		for i in range(8):
-			self.config[0][i] += self.black_config[str(i+1)][1]
-			self.config[1][i] += self.black_config[str(i+1)][0]
-			self.config[6][i] += self.white_config[str(i+1)][0]
-			self.config[7][i] += self.white_config[str(i+1)][1]
+			self.config[0][i] += self.black_config[1][i]
+			self.config[1][i] += self.black_config[0][i]
+			self.config[6][i] += self.white_config[0][i]
+			self.config[7][i] += self.white_config[1][i]
 
 		self.update_positions()
 
@@ -211,7 +207,7 @@ class Board:
 
 	def update_config(self):
 		self.config = [[self.get_piece_from_pos((x, y)).to_string() if \
-				  self.get_piece_from_pos((x, y)) != None else ' ' for x in range(8)] \
+				  self.get_piece_from_pos((x, y)) != None else '-' for x in range(8)] \
 					for y in range(8)]
 		
 	

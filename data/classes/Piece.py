@@ -36,7 +36,7 @@ class Piece:
 				capture = True
 				captured_square = board.get_square_from_pos((square.x, prev_square.y))
 				opposing_type = captured_square.occupying_piece.type
-				if type_chart[opposing_type][self.type] != 0:
+				if type_chart[self.type_img][opposing_type] != 0:
 					captured_square.occupying_piece = None
 			
 			if board.current_move == '' and (self.notation != 'K' or abs(prev_square.x - self.x) != 2):
@@ -48,14 +48,14 @@ class Piece:
 				board.current_move += 'x'
 				# Pokemon chess rules
 				board.moves_until_draw = 101
-				if type_chart[opposing_type][self.type] == 1:
+				if type_chart[self.type][opposing_type] == '1':
 					square.occupying_piece = self
 					board.current_move += square.coord
-				elif type_chart[opposing_type][self.type] == 0.5:
+				elif type_chart[self.type][opposing_type] == '0.5':
 					print('Not very effective...')
 					square.occupying_piece = None
 					board.current_move += square.coord + '-'
-				elif type_chart[opposing_type][self.type] == 2:
+				elif type_chart[self.type][opposing_type] == '2':
 					print('Super effective!')
 					square.occupying_piece = self
 					board.chain_move = True
