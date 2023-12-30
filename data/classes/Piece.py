@@ -36,7 +36,7 @@ class Piece:
 				capture = True
 				captured_square = board.get_square_from_pos((square.x, prev_square.y))
 				opposing_type = captured_square.occupying_piece.type
-				if type_chart[self.type_img][opposing_type] != 0:
+				if type_chart[self.type][opposing_type] != 0:
 					captured_square.occupying_piece = None
 			
 			if board.current_move == '' and (self.notation != 'K' or abs(prev_square.x - self.x) != 2):
