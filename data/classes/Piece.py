@@ -54,7 +54,6 @@ class Piece:
 			if capture:
 				board.current_move += 'x'
 				# Pokemon chess rules
-				board.moves_until_draw = 101
 				output = ''
 				modifier = ''
 				previous_piece = square.occupying_piece
@@ -92,6 +91,8 @@ class Piece:
 				if output != '':
 					print(output)
 					board.current_move += modifier
+				if type_chart[self.type][opposing_type] != '0' and not miss:
+					board.moves_until_draw = 101
 			else:
 				square.occupying_piece = self
 				board.current_move += square.coord
