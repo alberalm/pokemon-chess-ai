@@ -4,7 +4,7 @@ from data.classes.Piece import Piece
 
 class Rook(Piece):
 	def __init__(self, pos, color, board, type):
-		self.piece_type = 'rook'
+		self.piece_type = 'Rook'
 		self.type = type
 		super().__init__(pos, color, board)
 

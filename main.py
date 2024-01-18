@@ -6,7 +6,7 @@ from data.classes.Board import Board
 pygame.init()
 
 WINDOW_SIZE = (600, 600)
-DETERMINISTIC = True
+DETERMINISTIC = False
 
 screen = pygame.display.set_mode(WINDOW_SIZE)
 board = Board(WINDOW_SIZE[0], WINDOW_SIZE[1], DETERMINISTIC)
@@ -24,8 +24,12 @@ def draw(display):
 	pygame.display.update()
 
 
-def game_to_str(game_moves, result, hashtag):
+def game_to_str(initial_config, game_moves, result, hashtag):
 	output = ''
+	for config in initial_config:
+		for type in config:
+			output += type[:2].title()
+		output += ' '
 	for i in range(len(game_moves)):
 		if i % 2 == 0:
 			output += str(i // 2 + 1) + '. '
@@ -86,7 +90,7 @@ async def main():
 	textRect.center = (WINDOW_SIZE[0] // 2, WINDOW_SIZE[1] // 2)
 	screen.blit(text, textRect)
 
-	print(game_to_str(board.game_moves, output, hashtag))
+	print(game_to_str(board.initial_config, board.game_moves, output, hashtag))
 
 	pygame.quit()
 	quit()

@@ -1,4 +1,5 @@
 import pygame
+import random
 
 class Piece:
 	def __init__(self, pos, color, board):
@@ -7,7 +8,7 @@ class Piece:
 		self.y = pos[1]
 		self.color = color
 		self.has_moved = False
-		img_path = 'data/images/pieces/' + color + '_' + self.piece_type + '.png'
+		img_path = 'data/images/pieces/' + color + '_' + self.piece_type.lower() + '.png'
 		self.img = pygame.image.load(img_path)
 		self.img = pygame.transform.scale(self.img, (board.tile_width - 20, board.tile_height - 20))
 		self.type_img = pygame.image.load('data/images/types/' + self.type + '.png')
@@ -26,6 +27,11 @@ class Piece:
 			prev_square.occupying_piece = None
 
 			capture = False
+			rand = random.randint(1, 160)
+
+			# This may not be accurate
+			miss = rand <= 16 # 1/10 chance to miss
+			critical_hit = rand >= 150 # 1/16 chance to critical hit
 
 			if square.occupying_piece is not None:
 				capture = True
@@ -33,11 +39,12 @@ class Piece:
 
 			# En passant
 			if self.notation == ' ' and square == board.en_passant and prev_square.x != square.x:
-				capture = True
-				captured_square = board.get_square_from_pos((square.x, prev_square.y))
-				opposing_type = captured_square.occupying_piece.type
-				if type_chart[self.type][opposing_type] != 0:
-					captured_square.occupying_piece = None
+				if not miss:
+					capture = True
+					captured_square = board.get_square_from_pos((square.x, prev_square.y))
+					opposing_type = captured_square.occupying_piece.type
+					if type_chart[self.type][opposing_type] != 0:
+						captured_square.occupying_piece = None
 			
 			if board.current_move == '' and (self.notation != 'K' or abs(prev_square.x - self.x) != 2):
 				board.current_move = self.notation if self.notation != ' ' else \
@@ -48,23 +55,43 @@ class Piece:
 				board.current_move += 'x'
 				# Pokemon chess rules
 				board.moves_until_draw = 101
+				output = ''
+				modifier = ''
+				previous_piece = square.occupying_piece
 				if type_chart[self.type][opposing_type] == '1':
 					square.occupying_piece = self
 					board.current_move += square.coord
 				elif type_chart[self.type][opposing_type] == '0.5':
-					print('Not very effective...')
+					output = 'Not very effective...'
 					square.occupying_piece = None
-					board.current_move += square.coord + '-'
+					board.current_move += square.coord
+					modifier = '-'
 				elif type_chart[self.type][opposing_type] == '2':
-					print('Super effective!')
+					output = 'Super effective!'
 					square.occupying_piece = self
 					board.chain_move = True
-					board.current_move += square.coord + ('+' if self.notation != ' ' or
-										   (self.y != 0 and self.y != 7) else '')
+					board.current_move += square.coord
+					modifier = '+'
 				else:
-					print('It had no effect...')
+					output = 'It had no effect...'
 					self.pos, self.x, self.y = prev_square.pos, prev_square.x, prev_square.y
 					prev_square.occupying_piece = self
+				if type_chart[self.type][opposing_type] != '0' and miss:
+					output = self.piece_type + '\'s attack missed!'
+					board.chain_move = False
+					prev_square.occupying_piece = self
+					self.pos, self.x, self.y = prev_square.pos, prev_square.x, prev_square.y
+					square.occupying_piece = previous_piece
+					modifier = '/'
+				elif critical_hit and (type_chart[self.type][opposing_type] == '1' or
+						   type_chart[self.type][opposing_type] == '0.5'):
+					output = 'Critical hit!'
+					board.chain_move = True
+					modifier = '*'
+					square.occupying_piece = self
+				if output != '':
+					print(output)
+					board.current_move += modifier
 			else:
 				square.occupying_piece = self
 				board.current_move += square.coord
@@ -72,15 +99,15 @@ class Piece:
 			if board.chain_move == False:
 				board.selected_piece = None
 			
-			# Careful with this when implementing misses
-			if self.notation == 'R' and not self.has_moved:
-				if self.color == 'white':
-					board.white_castle -= 1
-				else:
-					board.black_castle -= 1
-			self.has_moved = True
+			if prev_square.occupying_piece == None: # No misses or no x0 effectiveness
+				if self.notation == 'R' and not self.has_moved:
+					if self.color == 'white':
+						board.white_castle -= 1
+					else:
+						board.black_castle -= 1
+				self.has_moved = True
 
-			if self.notation == ' ':
+			if self.notation == ' ' and prev_square.occupying_piece == None:
 				board.moves_until_draw = 101
 				# En passant setup
 				if self.color == 'white' and self.y == 4 and prev_square.y == 6:
@@ -111,10 +138,11 @@ class Piece:
 					rook.pos, rook.x, rook.y = (5, self.y), 5, self.y
 					board.get_square_from_pos((5, self.y)).occupying_piece = rook
 					board.current_move = 'O-O'
-				if self.color == 'white':
-					board.white_castle = 0
-				else:
-					board.black_castle = 0
+				if prev_square.occupying_piece == None:
+					if self.color == 'white':
+						board.white_castle = 0
+					else:
+						board.black_castle = 0
 
 			return True
 		elif not board.chain_move:

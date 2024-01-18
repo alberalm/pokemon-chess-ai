@@ -33,9 +33,10 @@ class Board:
 		self.white_config = read_config('white_config.csv')
 		self.black_config = read_config('black_config.csv')
 
+		self.initial_config = self.white_config + self.black_config
+
 		self.type_chart = read_type_chart('type_chart.csv')
 
-		# try making it chess.board.fen()
 		self.config = [
 			['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
 			['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
@@ -169,11 +170,11 @@ class Board:
 						self,
 						clicked_square.occupying_piece.type
 						)
-				self.current_move += '=' + clicked_square.occupying_piece.notation
+				modifier = self.current_move[-1] if self.chain_move else ''
+				self.current_move = self.current_move[:-1] + '=' + clicked_square.occupying_piece.notation
 				if self.chain_move:
 						self.selected_piece = clicked_square.occupying_piece
-						self.current_move += '+'
-						# CHANGE THIS WHEN CRITICAL HITS ARE IMPLEMENTED
+						self.current_move += modifier
 				if not self.chain_move or self.game_finished() != '':
 					self.end_turn()
 

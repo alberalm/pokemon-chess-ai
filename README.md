@@ -1,5 +1,7 @@
 This project is heavily based on the work of Michael Maranan (x4nth055 on Github) and his worderful tutorial available on https://thepythoncode.com/article/make-a-chess-game-using-pygame-in-python.
 
+After implementing the necessary logic, I deployed the project on my Github page using pygbag (https://pygame-web.github.io/wiki/pygbag/github.io/).
+
 The aim of this project is to build a Pokémon Chess environment to train an AI model.
 
 Notation for Pokémon Chess games:
@@ -11,8 +13,8 @@ NoFiGrPsIcFiFlGh DaWaGrStFaElBuPo NoFiGrPsIcFiFlGh DaWaGrStFaElBuPoRoDr
 22... cxb5+xa4+a3
 - If a move is not very effective, it includes "-" at the end. For example: 14. Bxd5-
 - If a not very effective capture is also a pawn promotion, it does not include the "=" or the promoted piece type. For example: 31. gxf8-
-- If a move if a critical hit, it includes "\*" after the square, following the same convention as in the super-effective rule. For example:
+- If a move if a critical hit, it includes "\*" after the square, following the same convention as in the super-effective rule and replacing any other modifier. For example:
 6... Nxf5*xg3
-- If a move misses, it is replaced by "/". For example: 9. /
+- If a capture misses, it includes "/" at the end, replacing any other modifier. For example: 9. Qxc4-/
 - If a move does not affect the target, it does not include the targeted square. For example: 11... Rx
 - If a move removes at least one king from the game, it ends with "#". For example: 43... Kxe3-# (this would be a draw if the white king was on e3, otherwise it would be a win for white)
